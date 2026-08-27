@@ -1,0 +1,29 @@
+name: Deploy Explore Maharashtra
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Task-3-Explore-Maharashtra/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy website to EC2
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo cp /var/www/html/index.html /var/www/html/index.html.backup 2>/dev/null || true
+            sudo cp /var/www/html/style.css /var/www/html/style.css.backup 2>/dev/null || true
+            sudo mkdir -p /var/www/html
