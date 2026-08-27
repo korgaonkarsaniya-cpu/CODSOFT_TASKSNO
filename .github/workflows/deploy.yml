@@ -17,7 +17,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy website to EC2
+      - name: Copy website files to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "Task-3-Explore-Maharashtra/index.html,Task-3-Explore-Maharashtra/style.css"
+          target: "/tmp/explore-maharashtra"
+
+      - name: Deploy files to Nginx
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -26,4 +35,11 @@ jobs:
           script: |
             sudo cp /var/www/html/index.html /var/www/html/index.html.backup 2>/dev/null || true
             sudo cp /var/www/html/style.css /var/www/html/style.css.backup 2>/dev/null || true
-            sudo mkdir -p /var/www/html
+
+            sudo cp /tmp/explore-maharashtra/Task-3-Explore-Maharashtra/index.html /var/www/html/index.html
+            sudo cp /tmp/explore-maharashtra/Task-3-Explore-Maharashtra/style.css /var/www/html/style.css
+
+            sudo nginx -t
+            sudo systemctl reload nginx
+
+            echo "Explore Maharashtra website deployed successfully!"
